@@ -1,6 +1,6 @@
 # National Medicaid Planning LLC
 
-Responsive static website for Richard Ladson, CMP®. Built from the approved ivory, navy and gold homepage, with independent photos, logo, SVG icons, divider and step-number files.
+Responsive static website for Richard Ladson, CMP™. Built from the approved ivory, navy and gold homepage, with independent photos, logo, SVG icons, divider and step-number files.
 
 ## Netlify settings
 
@@ -28,7 +28,7 @@ Once the GitHub repository is linked in Netlify, pushes to `main` trigger a new 
 - `dist/assets/brand/`: the supplied original logo.
 - `dist/assets/icons/` and `dist/assets/decor/`: individual SVG assets.
 
-The second photo set was used, preserving the original mockup’s compositions. These are AI-generated family scenes. Richard’s portrait uses an optimized copy of his supplied original photograph, displayed in a responsive square frame. See `ASSET-NOTES.md`.
+The second photo set was used, preserving the original mockup’s compositions. These are AI-generated family scenes. Richard’s portrait uses an optimized copy of his supplied original photograph, displayed in a responsive head-and-shoulders crop matching the first portrait. See `ASSET-NOTES.md`.
 
 ## Consultation buttons
 

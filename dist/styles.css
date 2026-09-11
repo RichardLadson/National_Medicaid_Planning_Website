@@ -12,8 +12,9 @@
 img.icon, img.line-icon { object-fit: contain; }
 img.ornament { display:block; object-fit:fill; height:14px; }
 .step { width:82px; height:54px; object-fit:contain; margin-left:-6px; }
-.founder-photo { width:100%; max-width:490px; aspect-ratio:1; margin-inline:auto; }
-.founder-photo img { height:100%; object-fit:cover; object-position:52% center; }
+.founder-photo { width:100%; max-width:490px; aspect-ratio:223 / 208; margin-inline:auto; overflow:clip; }
+/* Match the first portrait's head-and-shoulders framing using the original photo. */
+.founder-photo img { position:absolute; width:312%; max-width:none; height:auto; left:-113%; top:-50%; }
 .founder figcaption { text-align:center; }
 .pathway .photo img { aspect-ratio:1.10; object-fit:cover; }
 @media (max-width:680px) {
