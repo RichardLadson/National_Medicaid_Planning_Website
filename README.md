@@ -50,6 +50,15 @@ Run `npm run build` with Node 22 or newer. The validator checks local references
 
 ## Domain and future integrations
 
-Publishing on a Netlify-provided address does not change `nationalmedicaidplanning.com` DNS. Add the custom domain through Netlify when ready. If you add analytics, forms, an embedded calendar or other external scripts, update the privacy wording and the Content Security Policy in `netlify.toml` to match the services actually enabled.
+Both `nationalmedicaidplanning.com` and `www.nationalmedicaidplanning.com` are attached to the [national-medicaid-planning Netlify project](https://app.netlify.com/projects/national-medicaid-planning/domain-management). DNS remains hosted at GoDaddy with these website records:
+
+| Type | Name | Value | TTL |
+| --- | --- | --- | --- |
+| A | `@` | `75.2.60.5` | 1 hour |
+| CNAME | `www` | `national-medicaid-planning.netlify.app` | 1 hour |
+
+GoDaddy nameservers and the existing `pay`, `_domainconnect`, and `_dmarc` records are preserved. Manage the custom domains and automatic Let's Encrypt certificate in Netlify's Domain management panel.
+
+If you add analytics, forms, an embedded calendar or other external scripts, update the privacy wording and the Content Security Policy in `netlify.toml` to match the services actually enabled.
 
 This repository contains website source and public business information only. Do not commit passwords, access tokens, CRM exports or client records.
