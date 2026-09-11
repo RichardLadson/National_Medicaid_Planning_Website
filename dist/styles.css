@@ -12,12 +12,13 @@
 img.icon, img.line-icon { object-fit: contain; }
 img.ornament { display:block; object-fit:fill; height:14px; }
 .step { width:82px; height:54px; object-fit:contain; margin-left:-6px; }
-.founder-photo { max-width:320px; margin-inline:auto; }
+.founder-photo { width:100%; max-width:490px; aspect-ratio:1; margin-inline:auto; }
+.founder-photo img { height:100%; object-fit:cover; object-position:52% center; }
 .founder figcaption { text-align:center; }
 .pathway .photo img { aspect-ratio:1.10; object-fit:cover; }
 @media (max-width:680px) {
   .step { width:64px; height:42px; margin-left:-5px; }
-  .founder-photo { max-width:280px; }
+  .founder-photo { max-width:440px; }
 }
 
 .not-found{max-width:850px}.not-found .brand{margin-bottom:60px}.not-found>p:not(.eyebrow){margin:26px 0;max-width:620px}.not-found .button{margin-top:8px}

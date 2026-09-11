@@ -28,7 +28,7 @@ Once the GitHub repository is linked in Netlify, pushes to `main` trigger a new 
 - `dist/assets/brand/`: the supplied original logo.
 - `dist/assets/icons/` and `dist/assets/decor/`: individual SVG assets.
 
-The second photo set was used, preserving the original mockup’s compositions. These are AI-generated family scenes. Richard’s portrait is the small, unretouched crop currently available; replace it with his original headshot for better sharpness. See `ASSET-NOTES.md`.
+The second photo set was used, preserving the original mockup’s compositions. These are AI-generated family scenes. Richard’s portrait uses an optimized copy of his supplied original photograph, displayed in a responsive square frame. See `ASSET-NOTES.md`.
 
 ## Consultation buttons
 
