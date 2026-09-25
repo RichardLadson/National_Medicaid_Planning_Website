@@ -22,6 +22,22 @@ document.addEventListener('keydown', event => {
 window.matchMedia('(min-width: 981px)').addEventListener('change', event => {
   if (event.matches) closeMenu();
 });
+/* One front door: when the planning app's fact finder is configured, the hero
+   button takes families straight to it instead of the consultation dialog. */
+(() => {
+  const candidate = window.NMP_CONFIG?.interviewUrl;
+  if (!candidate) return;
+  let url;
+  try { url = new URL(candidate); } catch { return; }
+  if (url.protocol !== 'https:' || url.username || url.password) return;
+  document.querySelectorAll('[data-interview-cta]').forEach(button => {
+    const link = document.createElement('a');
+    link.className = button.className;
+    link.href = url.href;
+    link.innerHTML = 'Get My Free Planning Report <img class="icon" src="/assets/icons/arrow-right.svg" alt="" aria-hidden="true" width="32" height="32">';
+    button.replaceWith(link);
+  });
+})();
 let dialogTrigger = null;
 document.querySelectorAll('[data-dialog]').forEach(button => {
   button.addEventListener('click', () => {
