@@ -106,4 +106,3 @@ main.expanded { max-width: 52rem; background: #fff; padding: 0 0 2rem; box-shado
   .expanded th { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 
-.doc-root{padding:1.2rem 1rem 2rem;background:#fff;color:#14181d;max-width:100%;overflow-x:auto}

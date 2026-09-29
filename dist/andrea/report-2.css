@@ -148,4 +148,3 @@ main.professional .calc .label { margin-bottom: .3rem; }
   .family .qa, .family .tile, .family figure.chart { break-inside: avoid; page-break-inside: avoid; }
 }
 
-.doc-root{padding:1.2rem 1rem 2rem;background:#fff;color:#14181d;max-width:100%;overflow-x:auto}

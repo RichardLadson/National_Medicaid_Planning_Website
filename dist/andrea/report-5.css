@@ -167,4 +167,3 @@ main.letter { max-width: 50rem; }
   .letter .page:first-of-type { break-before: auto; page-break-before: auto; }
 }
 
-.doc-root{padding:1.2rem 1rem 2rem;background:#fff;color:#14181d;max-width:100%;overflow-x:auto}
