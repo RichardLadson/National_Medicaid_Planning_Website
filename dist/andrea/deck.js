@@ -1,3 +1,14 @@
+(function(){
+  var ok=/(^|\.)nationalmedicaidplanning\.com$/.test(location.hostname);
+  function id(store,k){try{var v=store.getItem(k);if(!v||!/^[a-z0-9]{4,16}$/.test(v)){v=Math.random().toString(36).slice(2,12)+Math.random().toString(36).slice(2,6);store.setItem(k,v);}return v;}catch(e){return 'anon00';}}
+  var last=null;
+  window.__andreaTrack=function(p){
+    if(!ok||p===last)return; last=p;
+    try{if(localStorage.getItem('andrea_notrack'))return;}catch(e){}
+    var body=JSON.stringify({p:p,v:id(localStorage,'andrea_v'),s:id(sessionStorage,'andrea_s')});
+    try{if(!(navigator.sendBeacon&&navigator.sendBeacon('/andrea/hit',body))){fetch('/andrea/hit',{method:'POST',body:body,keepalive:true}).catch(function(){});}}catch(e){}
+  };
+})();
 
 (function(){
   if (!Object.prototype.hasOwnProperty.call(HTMLTemplateElement.prototype, 'shadowRootMode')) {
@@ -14,7 +25,7 @@
   slides.forEach(function(el){var h=el.querySelector('h2,h1');labels[el.id]=h?h.textContent.trim():el.id;});
   document.body.classList.add('deck');
   function indexOf(hash){var i=ids.indexOf((hash||'').replace('#',''));return i<0?0:i;}
-  function show(i,push){
+  function show(i,push){try{window.__andreaTrack&&window.__andreaTrack(ids[i]);}catch(e){}
     i=Math.max(0,Math.min(ids.length-1,i));
     slides.forEach(function(el,k){el.classList.toggle('active',k===i);});
     links.forEach(function(a){a.classList.toggle('active',a.getAttribute('href')==='#'+ids[i]);});

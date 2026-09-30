@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Briefing Views</title>
+<link rel="stylesheet" href="stats.css">
+</head>
+<body>
+<main class="wrap">
+  <header class="head">
+    <p class="eyebrow">nationalmedicaidplanning.com/andrea</p>
+    <h1>Briefing views</h1>
+    <p class="muted" id="status">Loading…</p>
+  </header>
+
+  <section id="keybox" class="panel" hidden>
+    <p>Enter the stats key to load the counts.</p>
+    <form id="keyform" class="row"><input id="keyinput" type="password" autocomplete="off" placeholder="Stats key" aria-label="Stats key"><button type="submit">Load</button></form>
+  </section>
+
+  <section id="totals" class="tiles" hidden>
+    <div class="tile"><span class="n" id="t-visits">0</span><span class="l">Visits</span></div>
+    <div class="tile"><span class="n" id="t-visitors">0</span><span class="l">Browsers</span></div>
+    <div class="tile"><span class="n" id="t-views">0</span><span class="l">Page views</span></div>
+    <div class="tile"><span class="n" id="t-last">–</span><span class="l">Last activity</span></div>
+  </section>
+
+  <section id="pages" hidden>
+    <h2>Views by page</h2>
+    <p class="muted">Pages nobody has opened yet are listed with a dash.</p>
+    <div class="scroll"><table id="pagetable"><thead><tr><th>Page</th><th class="num">Views</th><th class="num">Browsers</th><th>Last viewed</th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <section id="visits" hidden>
+    <h2>Visits</h2>
+    <p class="muted">One visit is one browser session. Pages are listed in the order they were opened.</p>
+    <div class="scroll"><table id="visittable"><thead><tr><th>Started</th><th>Browser</th><th class="num">Pages</th><th>Path through the deck</th></tr></thead><tbody></tbody></table></div>
+  </section>
+
+  <section id="tools" class="panel" hidden>
+    <h2>Housekeeping</h2>
+    <p><button id="notrack" type="button">Don't count this browser</button> <span class="muted" id="notrack-state"></span></p>
+    <p class="muted">Sets a flag in this browser only, so your own reading of the deck stays out of the numbers. Do it in every browser you use.</p>
+    <p><button id="reset" type="button" class="danger">Reset all counts</button> <span class="muted">Asks once, then deletes every recorded view.</span></p>
+  </section>
+</main>
+<script src="stats.js" defer></script>
+</body>
+</html>

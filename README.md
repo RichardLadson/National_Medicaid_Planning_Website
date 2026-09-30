@@ -62,3 +62,9 @@ GoDaddy nameservers and the existing `pay`, `_domainconnect`, and `_dmarc` recor
 If you add analytics, forms, an embedded calendar or other external scripts, update the privacy wording and the Content Security Policy in `netlify.toml` to match the services actually enabled.
 
 This repository contains website source and public business information only. Do not commit passwords, access tokens, CRM exports or client records.
+
+## Briefing view tracking (`/andrea`)
+
+The briefing at `/andrea` counts which of its pages are opened. Two Netlify Functions in `netlify/functions/` handle it: `andrea-hit.mjs` (served at `/andrea/hit`) records one view per page change as a small entry in the `andrea-views` Netlify Blobs store, and `andrea-stats.mjs` (served at `/andrea/stats-data`) returns those entries to the dashboard at `/andrea/stats.html`. The dashboard needs the `ANDREA_STATS_KEY` environment variable (a secret on the production context) either in the page's URL hash once, or typed into its form; it also offers a "don't count this browser" switch and a reset. Each entry holds only a timestamp, the page id and two random ids the browser keeps for itself (browser and session); no names, addresses, IP addresses or device details. The Privacy Policy in `dist/index.html` describes this. The deck's page script is generated from the presentation source by a build step outside this repository; `dist/andrea/titles.json` maps page ids to the labels the dashboard shows.
+
+Deploys currently run from the command line (`npx netlify-cli deploy --prod --dir dist`), which bundles the functions and installs `@netlify/blobs` from `package.json`.
