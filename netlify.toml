@@ -9,6 +9,9 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
+[functions."sherene-gate"]
+  included_files = ["private/sherene/**"]
+
 [[headers]]
   for = "/*"
   [headers.values]

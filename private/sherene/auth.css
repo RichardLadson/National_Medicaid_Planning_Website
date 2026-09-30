@@ -1,0 +1,29 @@
+@font-face{font-family:'Source Sans 3';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/SourceSans3-400.woff2) format('woff2')}
+@font-face{font-family:'Source Sans 3';font-style:normal;font-weight:600;font-display:swap;src:url(fonts/SourceSans3-600.woff2) format('woff2')}
+@font-face{font-family:'Source Serif 4';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/SourceSerif4-700.woff2) format('woff2')}
+body.auth{margin:0;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px 16px;box-sizing:border-box;background:#f7f8fa;color:#1f2a37;font-family:'Source Sans 3','Helvetica Neue',Arial,sans-serif;font-size:17px;line-height:1.5}
+.auth-card{width:100%;max-width:26rem;background:#fff;border:1px solid #d9dee5;border-top:4px solid #b8893b;padding:1.8rem 1.6rem 1.6rem;box-sizing:border-box}
+.auth .eyebrow{margin:0 0 .4rem;font-size:.72rem;letter-spacing:.09em;text-transform:uppercase;color:#b8893b;font-weight:700}
+.auth h1{margin:0 0 .5rem;font-family:'Source Serif 4',Georgia,serif;font-size:1.7rem;line-height:1.15;color:#1b2d4a;text-wrap:balance}
+.auth .lede{margin:0 0 1rem;color:#5b6573}
+.auth .notice{margin:0 0 1rem;padding:.6rem .8rem;background:#f5f0e8;border:1px solid #e3d5bb;color:#6a4b12;font-size:.95rem}
+.auth form{display:grid;gap:.9rem}
+.auth label{display:grid;gap:.3rem;font-weight:600;font-size:.9rem;color:#2f4a6d}
+.auth input{font:inherit;padding:.55rem .7rem;border:1px solid #b9c2cc;border-radius:3px;background:#fff;color:#1f2a37}
+.auth input:focus{outline:2px solid #b8893b;outline-offset:1px;border-color:#b8893b}
+.auth button{font:inherit;font-weight:600;padding:.65rem 1rem;background:#1b2d4a;color:#fff;border:0;border-radius:3px;cursor:pointer}
+.auth button:hover{background:#2f4a6d}
+.auth .small{margin:1rem 0 0;font-size:.9rem}
+.auth a{color:#2f4a6d}
+.deck-account{max-width:70rem;margin:0 auto 2rem;padding:0 1rem;text-align:right;font-size:.85rem;color:#5b6573}
+.deck-account a{color:#5b6573}
+@media (prefers-color-scheme: dark){
+  body.auth{background:#141c28;color:#e6e9ee}
+  .auth-card{background:#1a2434;border-color:#2c3a4d}
+  .auth h1{color:#dfe6f0}
+  .auth .lede,.deck-account,.deck-account a{color:#a3adba}
+  .auth label{color:#9db4d3}
+  .auth input{background:#141c28;color:#e6e9ee;border-color:#2c3a4d}
+  .auth .notice{background:#2a2519;border-color:#4a3e22;color:#e6d3a8}
+  .auth a{color:#9db4d3}
+}
