@@ -4,14 +4,18 @@
   var titles = {};
   var order = [];
 
+  // The key is remembered in this browser until "Forget the key" is used,
+  // so the dashboard opens straight to the numbers after the first visit.
+  function remember(k) { try { localStorage.setItem(KEY, k); } catch (e) { try { sessionStorage.setItem(KEY, k); } catch (e2) {} } }
+  function forget() { try { localStorage.removeItem(KEY); } catch (e) {} try { sessionStorage.removeItem(KEY); } catch (e) {} }
   function getKey() {
     var fromHash = (location.hash || '').replace(/^#/, '');
     if (fromHash) {
-      try { sessionStorage.setItem(KEY, fromHash); } catch (e) {}
+      remember(fromHash);
       history.replaceState(null, '', location.pathname);
       return fromHash;
     }
-    try { return sessionStorage.getItem(KEY) || ''; } catch (e) { return ''; }
+    try { return localStorage.getItem(KEY) || sessionStorage.getItem(KEY) || ''; } catch (e) { return ''; }
   }
 
   function fmt(iso) {
@@ -98,7 +102,7 @@
   $('keyform').addEventListener('submit', function (ev) {
     ev.preventDefault();
     var k = $('keyinput').value.trim(); if (!k) return;
-    try { sessionStorage.setItem(KEY, k); } catch (e) {}
+    remember(k);
     load(k);
   });
   $('notrack').addEventListener('click', function () {
@@ -113,6 +117,7 @@
       .then(function () { armed = false; $('reset').textContent = 'Reset all counts'; return load(k); });
   });
 
+  $('forget').addEventListener('click', function () { forget(); location.reload(); });
   notrackState();
   var key = getKey();
   if (key) load(key); else { $('keybox').hidden = false; $('status').textContent = 'Locked.'; }
