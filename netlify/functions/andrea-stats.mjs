@@ -11,7 +11,7 @@ export default async (req) => {
   if (!key || given !== key) return Response.json({ error: 'unauthorized' }, { status: 401 });
   if (req.method !== 'GET' && req.method !== 'DELETE') return new Response('', { status: 405 });
 
-  const store = getStore('andrea-views');
+  const store = getStore({ name: 'andrea-views', consistency: 'strong' });
   const { blobs } = await store.list({ prefix: 'ev/' });
 
   if (req.method === 'DELETE') {

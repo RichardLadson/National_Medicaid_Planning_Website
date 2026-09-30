@@ -15,7 +15,7 @@ export default async (req) => {
   const { p, v, s } = body || {};
   if (!PAGE.test(p || '') || !ID.test(v || '') || !ID.test(s || '')) return new Response('', { status: 400 });
   const t = new Date().toISOString();
-  await getStore('andrea-views').set(`ev/${t}_${p}_${v}_${s}`, '1');
+  await getStore({ name: 'andrea-views', consistency: 'strong' }).set(`ev/${t}_${p}_${v}_${s}`, '1');
   return new Response(null, { status: 204 });
 };
 
