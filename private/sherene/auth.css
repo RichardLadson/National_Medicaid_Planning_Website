@@ -15,13 +15,11 @@ body.auth{margin:0;min-height:100vh;display:flex;align-items:center;justify-cont
 .auth button:hover{background:#2f4a6d}
 .auth .small{margin:1rem 0 0;font-size:.9rem}
 .auth a{color:#2f4a6d}
-.deck-account{max-width:70rem;margin:0 auto 2rem;padding:0 1rem;text-align:right;font-size:.85rem;color:#5b6573}
-.deck-account a{color:#5b6573}
 @media (prefers-color-scheme: dark){
   body.auth{background:#141c28;color:#e6e9ee}
   .auth-card{background:#1a2434;border-color:#2c3a4d}
   .auth h1{color:#dfe6f0}
-  .auth .lede,.deck-account,.deck-account a{color:#a3adba}
+  .auth .lede{color:#a3adba}
   .auth label{color:#9db4d3}
   .auth input{background:#141c28;color:#e6e9ee;border-color:#2c3a4d}
   .auth .notice{background:#2a2519;border-color:#4a3e22;color:#e6d3a8}
@@ -34,3 +32,6 @@ body.auth{margin:0;min-height:100vh;display:flex;align-items:center;justify-cont
 .auth .tag{font-size:.7rem;letter-spacing:.06em;text-transform:uppercase;color:#b8893b;font-weight:700}
 .auth .link{display:block;word-break:break-all;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem;margin-top:.3rem;user-select:all}
 @media (prefers-color-scheme: dark){.auth h2{color:#dfe6f0}.auth .users th,.auth .users td{border-color:#2c3a4d}}
+nav.deck .deck-account{margin-left:auto;font-size:.8rem;color:#5b6573;white-space:nowrap}
+nav.deck .deck-account a{color:#2f4a6d;font-weight:600;background:none;padding:0}
+@media (prefers-color-scheme: dark){nav.deck .deck-account{color:#a3adba}nav.deck .deck-account a{color:#9db4d3}}
