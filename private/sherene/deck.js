@@ -1,3 +1,13 @@
+(function(){
+  var ok=/(^|\.)nationalmedicaidplanning\.com$/.test(location.hostname);
+  function sid(){try{var v=sessionStorage.getItem('sherene_s');if(!v||!/^[a-z0-9]{4,16}$/.test(v)){v=Math.random().toString(36).slice(2,12)+Math.random().toString(36).slice(2,6);sessionStorage.setItem('sherene_s',v);}return v;}catch(e){return 'anon00';}}
+  var last=null;
+  window.__deckTrack=function(p){
+    if(!ok||p===last)return; last=p;
+    var body=JSON.stringify({p:p,s:sid()});
+    try{if(!(navigator.sendBeacon&&navigator.sendBeacon('/sherene/hit',body))){fetch('/sherene/hit',{method:'POST',body:body,keepalive:true,credentials:'same-origin'}).catch(function(){});}}catch(e){}
+  };
+})();
 
 (function(){
   if (!Object.prototype.hasOwnProperty.call(HTMLTemplateElement.prototype, 'shadowRootMode')) {
@@ -14,7 +24,7 @@
   slides.forEach(function(el){var h=el.querySelector('h2,h1');labels[el.id]=h?h.textContent.trim():el.id;});
   document.body.classList.add('deck');
   function indexOf(hash){var i=ids.indexOf((hash||'').replace('#',''));return i<0?0:i;}
-  function show(i,push){
+  function show(i,push){try{window.__deckTrack&&window.__deckTrack(ids[i]);}catch(e){}
     i=Math.max(0,Math.min(ids.length-1,i));
     slides.forEach(function(el,k){el.classList.toggle('active',k===i);});
     links.forEach(function(a){a.classList.toggle('active',a.getAttribute('href')==='#'+ids[i]);});

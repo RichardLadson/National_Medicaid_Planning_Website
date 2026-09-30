@@ -267,7 +267,7 @@ async function serveFile(root, rel, inject) {
   if (ext === '.html' && inject) {
     data = data.toString()
       .replace('<link rel="stylesheet" href="inline.css">', `<link rel="stylesheet" href="inline.css"><link rel="stylesheet" href="${BASE}/auth.css">`)
-      .replace('<span class="keys">', `<span class="deck-account">Signed in as ${esc(inject.user)} · ${inject.admin ? `<a href="${BASE}/admin">Logins</a> · ` : ''}<a href="${BASE}/password">Change password</a> · <a href="${BASE}/logout">Log out</a></span><span class="keys">`);
+      .replace('<span class="keys">', `<span class="deck-account">Signed in as ${esc(inject.user)} · ${inject.admin ? `<a href="${BASE}/stats">Views</a> · <a href="${BASE}/admin">Logins</a> · ` : ''}<a href="${BASE}/password">Change password</a> · <a href="${BASE}/logout">Log out</a></span><span class="keys">`);
   }
   const isFont = ext === '.woff2';
   return new Response(data, { headers: { 'content-type': TYPES[ext] || 'application/octet-stream', 'cache-control': isFont ? 'public, max-age=86400' : 'private, no-store', ...(ext === '.html' ? { 'content-security-policy': CSP, 'x-frame-options': 'DENY', 'referrer-policy': 'strict-origin-when-cross-origin' } : {}), 'x-content-type-options': 'nosniff' } });
@@ -355,6 +355,33 @@ export default async (req) => {
   }
 
   if (s.rec.mustChange) return redirect(`${BASE}/password`);
+
+  // View tracking: the deck posts { p: page id, s: session id }; the login comes from the cookie.
+  if (p === `${BASE}/hit`) {
+    if (req.method !== 'POST') return new Response('', { status: 405 });
+    let body; try { body = await req.json(); } catch { return new Response('', { status: 400 }); }
+    const { p: pg, s: sid } = body || {};
+    if (!/^[A-Za-z0-9._-]{1,24}$/.test(pg || '') || !/^[a-z0-9]{4,16}$/.test(sid || '')) return new Response('', { status: 400 });
+    const t = new Date().toISOString();
+    const rec = Buffer.from(JSON.stringify({ t, p: pg, u: s.user, s: sid })).toString('hex');
+    await getStore({ name: 'sherene-views', consistency: 'strong' }).set(`ev/${t}_${rec}`, '1');
+    return new Response(null, { status: 204 });
+  }
+
+  if (p === `${BASE}/stats` || p === `${BASE}/stats-data`) {
+    if (!s.rec.admin) return redirect(`${BASE}/`);
+    if (p === `${BASE}/stats`) return (await serveFile(root, 'stats.html', null)) || new Response('Not found', { status: 404 });
+    const views = getStore({ name: 'sherene-views', consistency: 'strong' });
+    const { blobs } = await views.list({ prefix: 'ev/' });
+    if (req.method === 'DELETE') { await Promise.all(blobs.map((b) => views.delete(b.key))); return Response.json({ deleted: blobs.length }); }
+    const events = blobs.map((b) => { try { return JSON.parse(Buffer.from(b.key.slice(b.key.indexOf('_') + 1), 'hex').toString()); } catch { return null; } })
+      .filter((e) => e && e.t && e.p && e.u && e.s).sort((a, b) => (a.t < b.t ? -1 : 1));
+    const { blobs: users } = await store().list({ prefix: 'user/' });
+    const admins = [];
+    for (const u of users) { const r = await store().get(u.key, { type: 'json' }); if (r?.admin) admins.push(u.key.slice(5)); }
+    for (const [name, seed] of Object.entries(SEED)) if (seed.admin && !admins.includes(name)) admins.push(name);
+    return Response.json({ events, admins, me: s.user }, { headers: { 'cache-control': 'no-store' } });
+  }
 
   if (p === `${BASE}/admin`) {
     if (!s.rec.admin) return redirect(`${BASE}/`);
