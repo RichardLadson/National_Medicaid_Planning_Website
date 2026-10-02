@@ -3,6 +3,9 @@ import { resolve, dirname, relative, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Script } from 'node:vm';
 
+// Paths served by Netlify Functions (netlify/functions/*), not by files in dist.
+const FUNCTION_PATHS = ['/andrea/hit', '/andrea/stats-data', '/sherene/hit', '/sherene/stats-data', '/sherene/login', '/sherene/logout', '/sherene/password', '/sherene/admin', '/sherene/reset'];
+
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const dist = resolve(root, 'dist');
 const errors = [];
@@ -38,7 +41,8 @@ for (const path of files) {
       continue;
     }
     let pathname = value.split(/[?#]/)[0];
-    if (pathname === '/') pathname = '/index.html';
+    if (FUNCTION_PATHS.some(f => pathname === f || pathname.startsWith(f + '/'))) continue;
+    if (pathname.endsWith('/')) pathname += 'index.html';
     const target = resolve(value.startsWith('/') ? dist : dirname(path), pathname.replace(/^\//, ''));
     if (!target.startsWith(dist + '/')) { errors.push(`Asset escapes the public folder: ${value}`); continue; }
     try { if (!(await stat(target)).isFile()) throw new Error('not a file'); checked.add(target); }

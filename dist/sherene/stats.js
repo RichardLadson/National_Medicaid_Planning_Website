@@ -61,8 +61,8 @@
 
     ['totals', 'filter', 'pages', 'visits', 'tools'].forEach(function (id) { $(id).hidden = false; });
     $('status').textContent = events.length
-      ? (includeMe ? 'Every recorded view, including your own.' : 'Your own views are left out. Tick the box to include them.')
-      : (all.length ? 'Only your own views so far. Tick the box to see them.' : 'No views recorded yet.');
+      ? (includeMe ? 'Every recorded view, including yours.' : 'Views made while signed in as an admin are left out. Visitors are numbered by browser.')
+      : (all.length ? 'Only admin views so far. Tick the box to see them.' : 'No views recorded yet.');
   }
 
   function load() {

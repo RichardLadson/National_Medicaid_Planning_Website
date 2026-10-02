@@ -1,28 +1,20 @@
-// Login gate for the /sherene deck. The deck's files live outside the public
-// folder (private/sherene, bundled with this function) and are served only to
-// a browser holding a valid session cookie. Credentials live in Netlify Blobs
-// (store "deck-auth"): the password is stored as a scrypt hash, and a seeded
-// login must change its password before the deck opens.
-//
-// Routes under /sherene:
-//   /login, /logout, /password           sign in, sign out, change password
-//   /reset, /reset/<token>               forgot-password request and the emailed link
-//   /admin                               for a login with the admin flag: set an
-//                                        email address, make a reset link, send it
-//   anything else                        the deck (needs a session)
-// auth.css and the fonts are public so the sign-in page can render.
-//
+// View tracking and the admin login for the /sherene page. The page itself is
+// public static content in dist/sherene; this function only handles:
+//   /sherene/hit                          one page view (anonymous, or the login if signed in)
+//   /sherene/stats-data                   the recorded views, for an admin login (DELETE clears)
+//   /sherene/login, /logout, /password    sign in, sign out, change password
+//   /sherene/reset, /sherene/reset/<token> forgot-password request and the emailed link
+//   /sherene/admin                        set an email address, make a reset link, temporary passwords
+// Credentials live in Netlify Blobs (store "deck-auth") as scrypt hashes.
 // Reset emails go through GoHighLevel when GHL_API_KEY, GHL_LOCATION_ID and
-// (optionally) GHL_EMAIL_FROM are set in the site's environment. Without them
-// the admin page still produces a reset link that can be sent by hand.
+// (optionally) GHL_EMAIL_FROM are set; otherwise the admin page makes a link to send by hand.
 import { getStore } from '@netlify/blobs';
 import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
-import { readFile, stat } from 'node:fs/promises';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
 const DECK = 'sherene';
 const BASE = `/${DECK}`;
+const HOME = `${BASE}/`;
+const STATS = `${BASE}/stats.html`;
 const COOKIE = `${DECK}_session`;
 const SESSION_DAYS = 30;
 const SEED = { sherene: { password: 'password123', admin: false }, richard: { password: 'password123', admin: true } };
@@ -31,21 +23,13 @@ const MAX_FAILURES = 8;
 const LOCK_MINUTES = 15;
 const RESET_MINUTES = 60;
 const CSP = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests";
-const TYPES = { '.html': 'text/html; charset=utf-8', '.css': 'text/css; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.json': 'application/json', '.woff2': 'font/woff2', '.png': 'image/png', '.svg': 'image/svg+xml', '.txt': 'text/plain; charset=utf-8' };
 const USER_RE = /^[a-z0-9._-]{1,40}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const ID_RE = /^[a-z0-9]{4,16}$/;
 
 const store = () => getStore({ name: 'deck-auth', consistency: 'strong' });
+const views = () => getStore({ name: 'sherene-views', consistency: 'strong' });
 const env = (k) => (globalThis.Netlify?.env?.get(k)) || process.env[k] || '';
-
-async function deckRoot() {
-  const candidates = [
-    path.resolve(process.cwd(), 'private', DECK),
-    path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..', '..', 'private', DECK),
-  ];
-  for (const c of candidates) { try { if ((await stat(c)).isDirectory()) return c; } catch {} }
-  throw new Error('deck files not found');
-}
 
 // --- credentials -----------------------------------------------------------
 function hashPassword(password, salt = randomBytes(16).toString('hex')) {
@@ -98,6 +82,7 @@ async function session(req) {
 }
 const setCookie = (token) => `${COOKIE}=${token}; Path=${BASE}; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_DAYS * 86400}`;
 const clearCookie = () => `${COOKIE}=; Path=${BASE}; HttpOnly; Secure; SameSite=Lax; Max-Age=0`;
+const landing = (rec) => (rec.admin ? STATS : HOME);
 
 // --- rate limiting ------------------------------------------------------------
 async function locked(key) {
@@ -164,7 +149,7 @@ const notice = (msg) => (msg ? `<p class="notice">${esc(msg)}</p>` : '');
 const loginPage = (msg = '', user = '') => page('Sign in', `
 <p class="eyebrow">Family Care Roadmap</p>
 <h1>Sign in</h1>
-<p class="lede">This page is private. Sign in with the login Richard gave you.</p>
+<p class="lede">The page itself is open to everyone at <a href="${HOME}">nationalmedicaidplanning.com/sherene</a>. This sign-in is for the views dashboard.</p>
 ${notice(msg)}
 <form method="post" action="${BASE}/login">
   <label>Login<input name="user" value="${esc(user)}" autocomplete="username" required autofocus></label>
@@ -175,7 +160,7 @@ ${notice(msg)}
 const passwordPage = (first, msg = '') => page('Choose a password', `
 <p class="eyebrow">Family Care Roadmap</p>
 <h1>${first ? 'Choose your own password' : 'Change your password'}</h1>
-<p class="lede">${first ? 'Before the deck opens, please replace the password Richard gave you with one only you know.' : 'Enter your current password and the new one.'} At least ${MIN_PASSWORD} characters.</p>
+<p class="lede">${first ? 'Please replace the password you were given with one only you know.' : 'Enter your current password and the new one.'} At least ${MIN_PASSWORD} characters.</p>
 ${notice(msg)}
 <form method="post" action="${BASE}/password">
   <label>Current password<input name="current" type="password" autocomplete="current-password" required autofocus></label>
@@ -183,7 +168,7 @@ ${notice(msg)}
   <label>New password again<input name="again" type="password" autocomplete="new-password" minlength="${MIN_PASSWORD}" required></label>
   <button type="submit">Save password</button>
 </form>
-${first ? '' : `<p class="small"><a href="${BASE}/">Back to the deck</a></p>`}`);
+${first ? '' : `<p class="small"><a href="${STATS}">Back to the views</a></p>`}`);
 const resetRequestPage = (msg = '', done = false) => page('Reset your password', `
 <p class="eyebrow">Family Care Roadmap</p>
 <h1>Reset your password</h1>
@@ -252,26 +237,11 @@ ${emailConfigured() ? `<h2>Email a reset link</h2>
   <label>Login<input name="user" required></label>
   <button type="submit">Send the email</button>
 </form>` : ''}
-<p class="small"><a href="${BASE}/">Back to the deck</a> · <a href="${BASE}/password">Change my password</a> · <a href="${BASE}/logout">Log out</a></p>`);
+<p class="small"><a href="${STATS}">Views</a> · <a href="${HOME}">Open the page</a> · <a href="${BASE}/password">Change my password</a> · <a href="${BASE}/logout">Log out</a></p>`);
 }
 
-const html = (body, status = 200, extra = {}) => new Response(body, { status, headers: { 'content-type': TYPES['.html'], 'cache-control': 'no-store', 'content-security-policy': CSP, 'x-frame-options': 'DENY', 'referrer-policy': 'strict-origin-when-cross-origin', ...extra } });
+const html = (body, status = 200, extra = {}) => new Response(body, { status, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'content-security-policy': CSP, 'x-frame-options': 'DENY', 'referrer-policy': 'strict-origin-when-cross-origin', ...extra } });
 const redirect = (to, extra = {}) => new Response(null, { status: 303, headers: { location: to, 'cache-control': 'no-store', ...extra } });
-
-async function serveFile(root, rel, inject) {
-  const file = path.resolve(root, rel);
-  if (!file.startsWith(root + path.sep) && file !== root) return null;
-  let data;
-  try { if (!(await stat(file)).isFile()) return null; data = await readFile(file); } catch { return null; }
-  const ext = path.extname(file).toLowerCase();
-  if (ext === '.html' && inject) {
-    data = data.toString()
-      .replace('<!--auth-css-->', `<link rel="stylesheet" href="${BASE}/auth.css">`)
-      .replace('<!--account-->', `<span class="deck-account">Signed in as ${esc(inject.user)} · ${inject.admin ? `<a href="${BASE}/stats">Views</a> · <a href="${BASE}/admin">Logins</a> · ` : ''}<a href="${BASE}/password">Change password</a> · <a href="${BASE}/logout">Log out</a></span>`);
-  }
-  const isFont = ext === '.woff2';
-  return new Response(data, { headers: { 'content-type': TYPES[ext] || 'application/octet-stream', 'cache-control': isFont ? 'public, max-age=86400' : 'private, no-store', ...(ext === '.html' ? { 'content-security-policy': CSP, 'x-frame-options': 'DENY', 'referrer-policy': 'strict-origin-when-cross-origin' } : {}), 'x-content-type-options': 'nosniff' } });
-}
 
 function validNew(next, again) {
   if (next.length < MIN_PASSWORD) return `The new password needs at least ${MIN_PASSWORD} characters.`;
@@ -283,12 +253,20 @@ export default async (req) => {
   const url = new URL(req.url);
   const origin = env('SHERENE_BASE_URL') || url.origin;
   const p = url.pathname.replace(/\/+$/, '') || BASE;
-  const root = await deckRoot();
   const form = async () => { try { return await req.formData(); } catch { return new FormData(); } };
 
-  // Public: stylesheet and fonts for the auth pages.
-  if (p === `${BASE}/auth.css` || p.startsWith(`${BASE}/fonts/`)) {
-    return (await serveFile(root, p.slice(BASE.length + 1), null)) || new Response('Not found', { status: 404 });
+  // View tracking. Anonymous visitors are told apart by the browser id the page keeps;
+  // a signed-in admin is recorded by login so the dashboard can leave those views out.
+  if (p === `${BASE}/hit`) {
+    if (req.method !== 'POST') return new Response('', { status: 405 });
+    let body; try { body = await req.json(); } catch { return new Response('', { status: 400 }); }
+    const { p: pg, s: sid, v: vid } = body || {};
+    if (!/^[A-Za-z0-9._-]{1,24}$/.test(pg || '') || !ID_RE.test(sid || '') || !ID_RE.test(vid || '')) return new Response('', { status: 400 });
+    const s = await session(req);
+    const t = new Date().toISOString();
+    const rec = Buffer.from(JSON.stringify({ t, p: pg, u: s ? s.user : `visitor ${vid}`, s: sid })).toString('hex');
+    await views().set(`ev/${t}_${rec}`, '1');
+    return new Response(null, { status: 204 });
   }
 
   if (p === `${BASE}/login`) {
@@ -301,10 +279,10 @@ export default async (req) => {
     const rec = await getUser(user);
     if (!rec || !checkPassword(password, rec)) { await noteFailure(user); return html(loginPage('That login and password did not match.', user), 401); }
     await clearFailures(user);
-    return redirect(rec.mustChange ? `${BASE}/password` : `${BASE}/`, { 'set-cookie': setCookie(await issue(user, rec)) });
+    return redirect(rec.mustChange ? `${BASE}/password` : landing(rec), { 'set-cookie': setCookie(await issue(user, rec)) });
   }
 
-  if (p === `${BASE}/logout`) return redirect(`${BASE}/login`, { 'set-cookie': clearCookie() });
+  if (p === `${BASE}/logout`) return redirect(HOME, { 'set-cookie': clearCookie() });
 
   if (p === `${BASE}/reset`) {
     if (req.method !== 'POST') return html(resetRequestPage());
@@ -336,11 +314,11 @@ export default async (req) => {
     await saveUser(user, rec);
     await store().delete(`reset/${user}`).catch(() => {});
     await clearFailures(user);
-    return redirect(`${BASE}/`, { 'set-cookie': setCookie(await issue(user, rec)) });
+    return redirect(landing(rec), { 'set-cookie': setCookie(await issue(user, rec)) });
   }
 
   const s = await session(req);
-  if (!s) return redirect(`${BASE}/login`);
+  if (!s) return p === `${BASE}/stats-data` ? Response.json({ error: 'unauthorized' }, { status: 401 }) : redirect(`${BASE}/login`);
 
   if (p === `${BASE}/password`) {
     if (req.method !== 'POST') return html(passwordPage(s.rec.mustChange));
@@ -351,29 +329,16 @@ export default async (req) => {
     if (problem) return html(passwordPage(s.rec.mustChange, problem), 400);
     const rec = { ...s.rec, ...hashPassword(next), mustChange: false, updatedAt: new Date().toISOString() };
     await saveUser(s.user, rec);
-    return redirect(`${BASE}/`, { 'set-cookie': setCookie(await issue(s.user, rec)) });
+    return redirect(landing(rec), { 'set-cookie': setCookie(await issue(s.user, rec)) });
   }
 
   if (s.rec.mustChange) return redirect(`${BASE}/password`);
 
-  // View tracking: the deck posts { p: page id, s: session id }; the login comes from the cookie.
-  if (p === `${BASE}/hit`) {
-    if (req.method !== 'POST') return new Response('', { status: 405 });
-    let body; try { body = await req.json(); } catch { return new Response('', { status: 400 }); }
-    const { p: pg, s: sid } = body || {};
-    if (!/^[A-Za-z0-9._-]{1,24}$/.test(pg || '') || !/^[a-z0-9]{4,16}$/.test(sid || '')) return new Response('', { status: 400 });
-    const t = new Date().toISOString();
-    const rec = Buffer.from(JSON.stringify({ t, p: pg, u: s.user, s: sid })).toString('hex');
-    await getStore({ name: 'sherene-views', consistency: 'strong' }).set(`ev/${t}_${rec}`, '1');
-    return new Response(null, { status: 204 });
-  }
-
-  if (p === `${BASE}/stats` || p === `${BASE}/stats-data`) {
-    if (!s.rec.admin) return redirect(`${BASE}/`);
-    if (p === `${BASE}/stats`) return (await serveFile(root, 'stats.html', null)) || new Response('Not found', { status: 404 });
-    const views = getStore({ name: 'sherene-views', consistency: 'strong' });
-    const { blobs } = await views.list({ prefix: 'ev/' });
-    if (req.method === 'DELETE') { await Promise.all(blobs.map((b) => views.delete(b.key))); return Response.json({ deleted: blobs.length }); }
+  if (p === `${BASE}/stats-data`) {
+    if (!s.rec.admin) return Response.json({ error: 'forbidden' }, { status: 403 });
+    const v = views();
+    const { blobs } = await v.list({ prefix: 'ev/' });
+    if (req.method === 'DELETE') { await Promise.all(blobs.map((b) => v.delete(b.key))); return Response.json({ deleted: blobs.length }); }
     const events = blobs.map((b) => { try { return JSON.parse(Buffer.from(b.key.slice(b.key.indexOf('_') + 1), 'hex').toString()); } catch { return null; } })
       .filter((e) => e && e.t && e.p && e.u && e.s).sort((a, b) => (a.t < b.t ? -1 : 1));
     const { blobs: users } = await store().list({ prefix: 'user/' });
@@ -384,7 +349,7 @@ export default async (req) => {
   }
 
   if (p === `${BASE}/admin`) {
-    if (!s.rec.admin) return redirect(`${BASE}/`);
+    if (!s.rec.admin) return redirect(HOME);
     if (req.method !== 'POST') return html(await adminPage());
     const f = await form();
     const action = String(f.get('action') || '');
@@ -415,8 +380,10 @@ export default async (req) => {
     return html(await adminPage('Unknown action.'), 400);
   }
 
-  const rel = p === BASE ? 'index.html' : p.slice(BASE.length + 1);
-  return (await serveFile(root, rel, { user: s.user, admin: s.rec.admin })) || new Response('Not found', { status: 404 });
+  return new Response('Not found', { status: 404 });
 };
 
-export const config = { path: ['/sherene', '/sherene/*'] };
+// Netlify reads this statically, so the paths must be plain string literals.
+export const config = {
+  path: ['/sherene/hit', '/sherene/stats-data', '/sherene/login', '/sherene/logout', '/sherene/password', '/sherene/admin', '/sherene/reset', '/sherene/reset/*'],
+};
