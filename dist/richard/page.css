@@ -72,7 +72,7 @@ figcaption{font-size:.88rem;color:var(--muted);margin-top:.2rem}
 .h2{margin:0 0 .4rem;font-family:var(--serif);font-size:1.6rem;line-height:1.15;color:var(--navy);text-wrap:balance}
 .lede{margin:0 0 1rem;max-width:46rem;font-family:var(--serif);font-size:1.05rem;color:var(--slate)}
 .scrollx{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--rule)}
-.timeline{display:grid;grid-template-columns:10.5rem repeat(9,minmax(5.2rem,1fr)) 5.2rem;min-width:58rem;font-size:.82rem}
+.timeline{display:grid;grid-template-columns:10.5rem repeat(9,minmax(5.2rem,1fr));min-width:54rem;font-size:.82rem}
 .tl-row{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:stretch;border-top:1px solid var(--rule)}
 .tl-phases{border-top:0}
 .tl-label{padding:.55rem .6rem;border-right:1px solid var(--rule);background:var(--faint)}
@@ -153,3 +153,9 @@ figcaption{font-size:.88rem;color:var(--muted);margin-top:.2rem}
 .tl-c9-9{grid-column:10 / 11}
 .tl-c9-10{grid-column:10 / 12}
 .tl-c10-10{grid-column:11 / 12}
+
+.top .links{display:flex;gap:1rem;margin-left:auto;font-size:.9rem}
+.top .links a{color:var(--slate);text-decoration:none;font-weight:600;padding:.2rem 0;border-bottom:2px solid transparent}
+.top .links a.on{color:var(--navy);border-bottom-color:var(--gold)}
+.top .links a:hover{border-bottom-color:var(--gold)}
+.timeline-page{margin-top:0}

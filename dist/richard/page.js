@@ -10,7 +10,7 @@
       return v;
     } catch (e) { return 'anon00'; }
   }
-  var body = JSON.stringify({ p: 'page', s: id(sessionStorage, 'richard_s'), v: id(localStorage, 'richard_v') });
+  var body = JSON.stringify({ p: (document.body.getAttribute('data-page') || 'page'), s: id(sessionStorage, 'richard_s'), v: id(localStorage, 'richard_v') });
   try {
     if (!(navigator.sendBeacon && navigator.sendBeacon('/richard/hit', body))) {
       fetch('/richard/hit', { method: 'POST', body: body, keepalive: true, credentials: 'same-origin' }).catch(function () {});
