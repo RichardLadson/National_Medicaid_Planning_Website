@@ -32,6 +32,11 @@
     Cache-Control = "public, max-age=0, must-revalidate"
 
 [[headers]]
+  for = "/richard/stats-data"
+  [headers.values]
+    Cache-Control = "no-store"
+
+[[headers]]
   for = "/sherene/stats-data"
   [headers.values]
     Cache-Control = "no-store"

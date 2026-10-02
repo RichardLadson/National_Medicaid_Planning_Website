@@ -1,0 +1,30 @@
+:root { --navy: #1b2d4a; --gold: #b8893b; --slate: #2f4a6d; --tile: #edf2f7; --line: #d7dee7; --ink: #1f2933; --muted: #5b6b7c; --bg: #fbfbf9; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.5 "Source Sans 3", "Helvetica Neue", Arial, sans-serif; }
+.wrap { max-width: 960px; margin: 0 auto; padding: 32px 16px 64px; }
+.head { border-bottom: 3px solid var(--gold); padding-bottom: 12px; margin-bottom: 24px; }
+.eyebrow { margin: 0; font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); font-weight: 600; }
+h1 { margin: 4px 0 6px; font: 600 32px/1.15 "Source Serif 4", Georgia, serif; color: var(--navy); }
+h2 { margin: 32px 0 4px; font: 600 22px/1.2 "Source Serif 4", Georgia, serif; color: var(--navy); }
+.muted { color: var(--muted); margin: 0 0 12px; }
+.panel { background: var(--tile); border: 1px solid var(--line); border-radius: 6px; padding: 16px; margin: 16px 0; }
+.row { display: flex; gap: 8px; flex-wrap: wrap; }
+input { flex: 1 1 220px; padding: 8px 10px; border: 1px solid var(--line); border-radius: 4px; font: inherit; }
+button { padding: 8px 14px; border: 1px solid var(--slate); border-radius: 4px; background: #fff; color: var(--slate); font: inherit; font-weight: 600; cursor: pointer; }
+button:hover { background: var(--slate); color: #fff; }
+button.danger { border-color: #9b2c2c; color: #9b2c2c; }
+button.danger:hover { background: #9b2c2c; color: #fff; }
+.tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+.tile { background: var(--tile); border-radius: 6px; padding: 14px 16px; display: flex; flex-direction: column; gap: 2px; }
+.tile .n { font: 600 30px/1.1 "Source Serif 4", Georgia, serif; color: var(--navy); font-variant-numeric: tabular-nums; }
+.tile .l { font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); }
+.scroll { overflow-x: auto; }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 13px; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+th.num, td.num { text-align: right; }
+td.zero { color: var(--muted); }
+td.path { font-size: 14px; color: var(--slate); }
+.bar { display: inline-block; height: 8px; background: var(--gold); border-radius: 2px; vertical-align: middle; margin-left: 8px; }
+.check{display:flex;gap:.5rem;align-items:center;font-size:.95rem}
+.head a{color:inherit}

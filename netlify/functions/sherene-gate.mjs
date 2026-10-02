@@ -1,4 +1,4 @@
-// View tracking and the admin login for the /sherene page. The page itself is
+// View tracking for the /sherene and /richard pages, and the admin login for their dashboards. The page itself is
 // public static content in dist/sherene; this function only handles:
 //   /sherene/hit                          one page view (anonymous, or the login if signed in)
 //   /sherene/stats-data                   the recorded views, for an admin login (DELETE clears)
@@ -28,7 +28,8 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ID_RE = /^[a-z0-9]{4,16}$/;
 
 const store = () => getStore({ name: 'deck-auth', consistency: 'strong' });
-const views = () => getStore({ name: 'sherene-views', consistency: 'strong' });
+const DECKS = ['sherene', 'richard'];
+const views = (deck) => getStore({ name: `${deck}-views`, consistency: 'strong' });
 const env = (k) => (globalThis.Netlify?.env?.get(k)) || process.env[k] || '';
 
 // --- credentials -----------------------------------------------------------
@@ -80,8 +81,8 @@ async function session(req) {
   if (!rec || rec.updatedAt !== parts[2]) return null;
   return { user, rec };
 }
-const setCookie = (token) => `${COOKIE}=${token}; Path=${BASE}; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_DAYS * 86400}`;
-const clearCookie = () => `${COOKIE}=; Path=${BASE}; HttpOnly; Secure; SameSite=Lax; Max-Age=0`;
+const setCookie = (token) => `${COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_DAYS * 86400}`;
+const clearCookie = () => `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`;
 const landing = (rec) => (rec.admin ? STATS : HOME);
 
 // --- rate limiting ------------------------------------------------------------
@@ -257,7 +258,8 @@ export default async (req) => {
 
   // View tracking. Anonymous visitors are told apart by the browser id the page keeps;
   // a signed-in admin is recorded by login so the dashboard can leave those views out.
-  if (p === `${BASE}/hit`) {
+  const deck = DECKS.find((d) => p === `/${d}/hit` || p === `/${d}/stats-data`);
+  if (deck && p === `/${deck}/hit`) {
     if (req.method !== 'POST') return new Response('', { status: 405 });
     let body; try { body = await req.json(); } catch { return new Response('', { status: 400 }); }
     const { p: pg, s: sid, v: vid } = body || {};
@@ -265,7 +267,7 @@ export default async (req) => {
     const s = await session(req);
     const t = new Date().toISOString();
     const rec = Buffer.from(JSON.stringify({ t, p: pg, u: s ? s.user : `visitor ${vid}`, s: sid })).toString('hex');
-    await views().set(`ev/${t}_${rec}`, '1');
+    await views(deck).set(`ev/${t}_${rec}`, '1');
     return new Response(null, { status: 204 });
   }
 
@@ -318,7 +320,7 @@ export default async (req) => {
   }
 
   const s = await session(req);
-  if (!s) return p === `${BASE}/stats-data` ? Response.json({ error: 'unauthorized' }, { status: 401 }) : redirect(`${BASE}/login`);
+  if (!s) return deck ? Response.json({ error: 'unauthorized' }, { status: 401 }) : redirect(`${BASE}/login`);
 
   if (p === `${BASE}/password`) {
     if (req.method !== 'POST') return html(passwordPage(s.rec.mustChange));
@@ -334,9 +336,9 @@ export default async (req) => {
 
   if (s.rec.mustChange) return redirect(`${BASE}/password`);
 
-  if (p === `${BASE}/stats-data`) {
+  if (deck && p === `/${deck}/stats-data`) {
     if (!s.rec.admin) return Response.json({ error: 'forbidden' }, { status: 403 });
-    const v = views();
+    const v = views(deck);
     const { blobs } = await v.list({ prefix: 'ev/' });
     if (req.method === 'DELETE') { await Promise.all(blobs.map((b) => v.delete(b.key))); return Response.json({ deleted: blobs.length }); }
     const events = blobs.map((b) => { try { return JSON.parse(Buffer.from(b.key.slice(b.key.indexOf('_') + 1), 'hex').toString()); } catch { return null; } })
@@ -385,5 +387,5 @@ export default async (req) => {
 
 // Netlify reads this statically, so the paths must be plain string literals.
 export const config = {
-  path: ['/sherene/hit', '/sherene/stats-data', '/sherene/login', '/sherene/logout', '/sherene/password', '/sherene/admin', '/sherene/reset', '/sherene/reset/*'],
+  path: ['/sherene/hit', '/sherene/stats-data', '/richard/hit', '/richard/stats-data', '/sherene/login', '/sherene/logout', '/sherene/password', '/sherene/admin', '/sherene/reset', '/sherene/reset/*'],
 };
