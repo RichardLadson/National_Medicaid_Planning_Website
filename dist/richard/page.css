@@ -72,7 +72,7 @@ figcaption{font-size:.88rem;color:var(--muted);margin-top:.2rem}
 .h2{margin:0 0 .4rem;font-family:var(--serif);font-size:1.6rem;line-height:1.15;color:var(--navy);text-wrap:balance}
 .lede{margin:0 0 1rem;max-width:46rem;font-family:var(--serif);font-size:1.05rem;color:var(--slate)}
 .scrollx{overflow-x:auto;-webkit-overflow-scrolling:touch;border:1px solid var(--rule)}
-.timeline{display:grid;grid-template-columns:11rem repeat(9,minmax(5.6rem,1fr)) 3.4rem;min-width:58rem;font-size:.82rem}
+.timeline{display:grid;grid-template-columns:10.5rem repeat(9,minmax(5.2rem,1fr)) 5.2rem;min-width:58rem;font-size:.82rem}
 .tl-row{display:grid;grid-template-columns:subgrid;grid-column:1 / -1;align-items:stretch;border-top:1px solid var(--rule)}
 .tl-phases{border-top:0}
 .tl-label{padding:.55rem .6rem;border-right:1px solid var(--rule);background:var(--faint)}
@@ -85,11 +85,11 @@ figcaption{font-size:.88rem;color:var(--muted);margin-top:.2rem}
 .tl-step.ph-assess{background:var(--assess-bg)} .tl-step.ph-plan{background:var(--plan-bg)} .tl-step.ph-secure{background:var(--secure-bg)}
 .tl-n{display:inline-grid;place-items:center;width:1.3rem;height:1.3rem;border-radius:50%;background:var(--navy);color:#fff;font-size:.72rem;margin-right:.3rem}
 .tl-step.ph-assess .tl-n{background:var(--assess)} .tl-step.ph-plan .tl-n{background:var(--plan)} .tl-step.ph-secure .tl-n{background:var(--secure)}
-.tl-after{color:var(--muted);font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.06em}
+.tl-after{color:var(--muted);font-weight:600;font-size:.68rem;text-transform:uppercase;letter-spacing:.06em;line-height:1.2}
 .tl-bar{margin:.45rem .25rem;padding:.35rem .55rem;border-radius:3px;display:flex;align-items:center;min-height:2.2rem;line-height:1.25}
 .tl-lead{background:var(--navy);color:#fff;font-weight:600}
 .tl-support{background:var(--tile,#edf2f7);color:var(--ink);border:1px solid var(--rule)}
-.tl-arrow{background:none;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;padding-left:.2rem}
+.tl-arrow{background:none;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;padding-left:.2rem;white-space:nowrap}
 .tl-arrow span::after{content:" →"}
 .tl-row:nth-of-type(3) .tl-lead{background:var(--manage,#2c6e3f)}
 .tl-deliv{background:var(--faint)}
