@@ -266,8 +266,8 @@ async function serveFile(root, rel, inject) {
   const ext = path.extname(file).toLowerCase();
   if (ext === '.html' && inject) {
     data = data.toString()
-      .replace('<link rel="stylesheet" href="inline.css">', `<link rel="stylesheet" href="inline.css"><link rel="stylesheet" href="${BASE}/auth.css">`)
-      .replace('<span class="keys">', `<span class="deck-account">Signed in as ${esc(inject.user)} · ${inject.admin ? `<a href="${BASE}/stats">Views</a> · <a href="${BASE}/admin">Logins</a> · ` : ''}<a href="${BASE}/password">Change password</a> · <a href="${BASE}/logout">Log out</a></span><span class="keys">`);
+      .replace('<!--auth-css-->', `<link rel="stylesheet" href="${BASE}/auth.css">`)
+      .replace('<!--account-->', `<span class="deck-account">Signed in as ${esc(inject.user)} · ${inject.admin ? `<a href="${BASE}/stats">Views</a> · <a href="${BASE}/admin">Logins</a> · ` : ''}<a href="${BASE}/password">Change password</a> · <a href="${BASE}/logout">Log out</a></span>`);
   }
   const isFont = ext === '.woff2';
   return new Response(data, { headers: { 'content-type': TYPES[ext] || 'application/octet-stream', 'cache-control': isFont ? 'public, max-age=86400' : 'private, no-store', ...(ext === '.html' ? { 'content-security-policy': CSP, 'x-frame-options': 'DENY', 'referrer-policy': 'strict-origin-when-cross-origin' } : {}), 'x-content-type-options': 'nosniff' } });
