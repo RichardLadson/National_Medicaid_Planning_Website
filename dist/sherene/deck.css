@@ -228,8 +228,5 @@ ul.tabs { list-style: disc; } ul.tabs a.tab { font-size: .8rem; margin-left: .4r
 .col > p.small { padding: .6rem 1rem 1rem; margin: 0; }
 .embed .doc-root { font-size: 17px; }
 nav.deck a.back { color: var(--slate, var(--muted)); margin-right: .25rem; }
-.col .said { padding: .7rem 1rem .5rem; border-bottom: 1px solid var(--rule); }
-.col .said .label { font-size: .72rem; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); font-weight: 700; margin: 0 0 .25rem; }
-.col .said p { margin: .2rem 0; font-size: .92rem; font-style: italic; }
 .col .step span { display: block; } .col .step .desc { font-size: .86rem; color: var(--muted); margin-top: .15rem; }
 
