@@ -12,6 +12,11 @@
 [functions."sherene-gate"]
   # Views dashboard login, view tracking and password reset for /sherene; the page itself is public static.
 
+[[redirects]]
+  from = "/sherene/presentation/*"
+  to = "/sherene/"
+  status = 301
+
 [[headers]]
   for = "/*"
   [headers.values]
