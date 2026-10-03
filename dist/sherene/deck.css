@@ -228,5 +228,8 @@ ul.tabs { list-style: disc; } ul.tabs a.tab { font-size: .8rem; margin-left: .4r
 .col > p.small { padding: .6rem 1rem 1rem; margin: 0; }
 .embed .doc-root { font-size: 17px; }
 nav.deck a.back { color: var(--slate, var(--muted)); margin-right: .25rem; }
+.ea.band.twin > div { background: var(--callout); border: 1px solid var(--rule); padding: .8rem 1rem; }
+.ea.band.twin h3 { margin: 0 0 .3rem; font-size: .8rem; letter-spacing: .08em; text-transform: uppercase; color: var(--gold); }
+ol.steps.ea .prompt { margin: .3rem 0 0; padding: .6rem .8rem; background: var(--tile); border-left: 3px solid var(--gold); font-size: .92rem; }
 .col .step span { display: block; } .col .step .desc { font-size: .86rem; color: var(--muted); margin-top: .15rem; }
 
