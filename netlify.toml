@@ -47,6 +47,11 @@
     Cache-Control = "no-store"
 
 [[headers]]
+  for = "/care/stats-data"
+  [headers.values]
+    Cache-Control = "no-store"
+
+[[headers]]
   for = "/andrea/stats-data"
   [headers.values]
     Cache-Control = "no-store"

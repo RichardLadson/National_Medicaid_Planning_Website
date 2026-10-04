@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 import { Script } from 'node:vm';
 
 // Paths served by Netlify Functions (netlify/functions/*), not by files in dist.
-const FUNCTION_PATHS = ['/andrea/hit', '/andrea/stats-data', '/sherene/hit', '/sherene/stats-data', '/richard/hit', '/richard/stats-data', '/sherene/login', '/sherene/logout', '/sherene/password', '/sherene/admin', '/sherene/reset'];
+const FUNCTION_PATHS = ['/andrea/hit', '/andrea/stats-data', '/sherene/hit', '/sherene/stats-data', '/richard/hit', '/richard/stats-data', '/sherene/login', '/sherene/logout', '/sherene/password', '/sherene/admin', '/sherene/reset', '/care/hit', '/care/stats-data'];
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..');
 const dist = resolve(root, 'dist');
