@@ -1,4 +1,4 @@
-// View tracking for the /sherene and /richard pages, and the admin login for their dashboards. The page itself is
+// View tracking for the /sherene, /richard and /bni pages, and the admin login for their dashboards. The page itself is
 // public static content in dist/sherene; this function only handles:
 //   /sherene/hit                          one page view (anonymous, or the login if signed in)
 //   /sherene/stats-data                   the recorded views, for an admin login (DELETE clears)
@@ -28,7 +28,7 @@ const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ID_RE = /^[a-z0-9]{4,16}$/;
 
 const store = () => getStore({ name: 'deck-auth', consistency: 'strong' });
-const DECKS = ['sherene', 'richard'];
+const DECKS = ['sherene', 'richard', 'bni'];
 const views = (deck) => getStore({ name: `${deck}-views`, consistency: 'strong' });
 const env = (k) => (globalThis.Netlify?.env?.get(k)) || process.env[k] || '';
 
@@ -387,5 +387,5 @@ export default async (req) => {
 
 // Netlify reads this statically, so the paths must be plain string literals.
 export const config = {
-  path: ['/sherene/hit', '/sherene/stats-data', '/richard/hit', '/richard/stats-data', '/sherene/login', '/sherene/logout', '/sherene/password', '/sherene/admin', '/sherene/reset', '/sherene/reset/*'],
+  path: ['/sherene/hit', '/sherene/stats-data', '/richard/hit', '/richard/stats-data', '/bni/hit', '/bni/stats-data', '/sherene/login', '/sherene/logout', '/sherene/password', '/sherene/admin', '/sherene/reset', '/sherene/reset/*'],
 };
