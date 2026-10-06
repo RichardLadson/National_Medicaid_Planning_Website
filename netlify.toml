@@ -17,6 +17,17 @@
   to = "/sherene/"
   status = 301
 
+# The BNI interview page is handed out as /BNI; the folder is lower-case.
+[[redirects]]
+  from = "/BNI"
+  to = "/bni/"
+  status = 301
+
+[[redirects]]
+  from = "/BNI/*"
+  to = "/bni/:splat"
+  status = 301
+
 [[headers]]
   for = "/*"
   [headers.values]
