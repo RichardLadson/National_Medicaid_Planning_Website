@@ -1,6 +1,6 @@
 (function () {
   var $ = function (id) { return document.getElementById(id); };
-  var titles = {}, order = [], all = [], admins = [];
+  var titles = {}, order = [], all = [], admins = [], signedIn = false;
 
   function fmt(iso) {
     if (!iso) return '–';
@@ -73,9 +73,10 @@
       vb.appendChild(tr);
     });
 
-    ['totals', 'filter', 'pages', 'people', 'visits', 'tools'].forEach(function (id) { $(id).hidden = false; });
+    ['totals', 'filter', 'pages', 'people', 'visits'].forEach(function (id) { $(id).hidden = false; });
+    $('tools').hidden = !signedIn;  // clearing the counts needs the admin login; reading them does not
     $('status').textContent = events.length
-      ? (includeMe ? 'Every recorded view, including yours.' : 'Views made while signed in as an admin are left out. Visitors are numbered by browser.')
+      ? (includeMe ? 'Every recorded view, including yours.' : 'Visitors are numbered by browser. Views made while signed in as an admin are left out; sign in at /sherene/login to leave out your own.')
       : (all.length ? 'Only admin views so far. Tick the box to see them.' : 'No views recorded yet.');
   }
 
@@ -85,11 +86,10 @@
       .then(function (t) { titles = t.titles || {}; order = t.order || []; })
       .then(function () { return fetch('/bni/stats-data', { cache: 'no-store', credentials: 'same-origin' }); })
       .then(function (r) {
-        if (r.status === 401 || r.status === 403) { location.href = '/sherene/login'; return null; }
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.json();
       })
-      .then(function (data) { if (data) { all = data.events || []; admins = data.admins || []; render(); } })
+      .then(function (data) { if (data) { all = data.events || []; admins = data.admins || []; signedIn = !!data.me; render(); } })
       .catch(function (err) { $('status').textContent = 'Could not load the counts: ' + err.message; });
   }
 

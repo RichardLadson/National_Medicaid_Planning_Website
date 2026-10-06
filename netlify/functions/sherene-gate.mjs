@@ -1,7 +1,7 @@
 // View tracking for the /sherene, /richard and /bni pages, and the admin login for their dashboards. The page itself is
 // public static content in dist/sherene; this function only handles:
 //   /sherene/hit                          one page view (anonymous, or the login if signed in)
-//   /sherene/stats-data                   the recorded views, for an admin login (DELETE clears)
+//   /sherene/stats-data                   the recorded views (anyone may read them; DELETE clears, admin only)
 //   /sherene/login, /logout, /password    sign in, sign out, change password
 //   /sherene/reset, /sherene/reset/<token> forgot-password request and the emailed link
 //   /sherene/admin                        set an email address, make a reset link, temporary passwords
@@ -242,6 +242,18 @@ ${emailConfigured() ? `<h2>Email a reset link</h2>
 }
 
 const html = (body, status = 200, extra = {}) => new Response(body, { status, headers: { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'content-security-policy': CSP, 'x-frame-options': 'DENY', 'referrer-policy': 'strict-origin-when-cross-origin', ...extra } });
+// Every recorded view for a deck, plus which logins are admins (so a dashboard can leave their views out).
+async function statsPayload(deck) {
+  const { blobs } = await views(deck).list({ prefix: 'ev/' });
+  const events = blobs.map((b) => { try { return JSON.parse(Buffer.from(b.key.slice(b.key.indexOf('_') + 1), 'hex').toString()); } catch { return null; } })
+    .filter((e) => e && e.t && e.p && e.u && e.s).sort((a, b) => (a.t < b.t ? -1 : 1));
+  const { blobs: users } = await store().list({ prefix: 'user/' });
+  const admins = [];
+  for (const u of users) { const r = await store().get(u.key, { type: 'json' }); if (r?.admin) admins.push(u.key.slice(5)); }
+  for (const [name, seed] of Object.entries(SEED)) if (seed.admin && !admins.includes(name)) admins.push(name);
+  return { events, admins };
+}
+
 const redirect = (to, extra = {}) => new Response(null, { status: 303, headers: { location: to, 'cache-control': 'no-store', ...extra } });
 
 function validNew(next, again) {
@@ -319,6 +331,13 @@ export default async (req) => {
     return redirect(landing(rec), { 'set-cookie': setCookie(await issue(user, rec)) });
   }
 
+  // The counts are anonymous (random browser ids and times), so a dashboard may read them without a login.
+  // Only clearing them (DELETE) needs an admin login.
+  if (deck && p === `/${deck}/stats-data` && req.method === 'GET') {
+    const who = await session(req);
+    return Response.json({ ...(await statsPayload(deck)), me: who?.user || null }, { headers: { 'cache-control': 'no-store' } });
+  }
+
   const s = await session(req);
   if (!s) return deck ? Response.json({ error: 'unauthorized' }, { status: 401 }) : redirect(`${BASE}/login`);
 
@@ -336,18 +355,12 @@ export default async (req) => {
 
   if (s.rec.mustChange) return redirect(`${BASE}/password`);
 
-  if (deck && p === `/${deck}/stats-data`) {
+  if (deck && p === `/${deck}/stats-data` && req.method === 'DELETE') {
     if (!s.rec.admin) return Response.json({ error: 'forbidden' }, { status: 403 });
     const v = views(deck);
     const { blobs } = await v.list({ prefix: 'ev/' });
-    if (req.method === 'DELETE') { await Promise.all(blobs.map((b) => v.delete(b.key))); return Response.json({ deleted: blobs.length }); }
-    const events = blobs.map((b) => { try { return JSON.parse(Buffer.from(b.key.slice(b.key.indexOf('_') + 1), 'hex').toString()); } catch { return null; } })
-      .filter((e) => e && e.t && e.p && e.u && e.s).sort((a, b) => (a.t < b.t ? -1 : 1));
-    const { blobs: users } = await store().list({ prefix: 'user/' });
-    const admins = [];
-    for (const u of users) { const r = await store().get(u.key, { type: 'json' }); if (r?.admin) admins.push(u.key.slice(5)); }
-    for (const [name, seed] of Object.entries(SEED)) if (seed.admin && !admins.includes(name)) admins.push(name);
-    return Response.json({ events, admins, me: s.user }, { headers: { 'cache-control': 'no-store' } });
+    await Promise.all(blobs.map((b) => v.delete(b.key)));
+    return Response.json({ deleted: blobs.length });
   }
 
   if (p === `${BASE}/admin`) {
