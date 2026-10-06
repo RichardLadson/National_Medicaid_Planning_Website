@@ -188,3 +188,9 @@ table.overlap td:first-child{width:12rem;color:#1b2d4a}table.overlap td:last-chi
 .hero.withphoto{display:grid;grid-template-columns:auto 1fr;gap:1.4rem 2rem;align-items:start}
 .photo{width:160px;height:160px;border-radius:50%;object-fit:cover;border:4px solid #fff;box-shadow:0 0 0 2px #b8893b,0 6px 18px rgba(27,45,74,.18);margin-top:.4rem}
 @media (max-width:640px){.hero.withphoto{grid-template-columns:1fr}.photo{width:120px;height:120px}}
+
+/* more air around the headline: a gap after it, and a gap after the second paragraph before the model */
+.hero.withphoto h1{margin-bottom:1.4rem}
+.hero.withphoto .sub{margin-bottom:1.1rem}
+.hero.withphoto .sub:last-child{margin-bottom:0}
+.hero.withphoto{margin-bottom:2.6rem}
