@@ -194,3 +194,6 @@ table.overlap td:first-child{width:12rem;color:#1b2d4a}table.overlap td:last-chi
 .hero.withphoto .sub{margin-bottom:1.1rem}
 .hero.withphoto .sub:last-child{margin-bottom:0}
 .hero.withphoto{margin-bottom:2.6rem}
+
+/* the suppliers table: two columns */
+table.suppliers{min-width:30rem}table.suppliers td:first-child{width:18rem}table.suppliers td:last-child{width:auto}
