@@ -9,6 +9,11 @@
   directory = "netlify/functions"
   node_bundler = "esbuild"
 
+[functions."content-library"]
+  # The private Content Library and draft lead-magnet pages, behind the admin login. Files are staged
+  # into netlify/gated by scripts/stage-gated.mjs before deploying.
+  included_files = ["netlify/gated/**"]
+
 [functions."sherene-gate"]
   # Views dashboard login, view tracking and password reset for /sherene; the page itself is public static.
 

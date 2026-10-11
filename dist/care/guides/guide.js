@@ -7,6 +7,8 @@
   var main = document.querySelector('main[data-asset]');
   if (!main) return;
   var asset = main.getAttribute('data-asset'), isFile = location.protocol === 'file:';
+  // Where this page reports its counts. A page with an empty address is not counted.
+  var hitUrl = main.hasAttribute('data-hit') ? main.getAttribute('data-hit') : '/care/hit';
 
   function rid() { return (Math.random().toString(36).slice(2, 12) + Math.random().toString(36).slice(2, 8) + 'xxxx').slice(0, 14); }
   function keep(store, key, make) { try { var v = store.getItem(key); if (!v) { v = make(); store.setItem(key, v); } return v; } catch (e) { return make(); } }
@@ -22,11 +24,11 @@
     return saved;
   })();
 
-  var off = isFile || navigator.globalPrivacyControl === true || navigator.doNotTrack === '1', sent = {};
+  var off = isFile || !hitUrl || navigator.globalPrivacyControl === true || navigator.doNotTrack === '1', sent = {};
   function hit(e) {
     if (off || sent[e]) return; sent[e] = 1;
     var body = JSON.stringify({ a: asset, e: e, v: keep(localStorage, 'care_v', rid), s: keep(sessionStorage, 'care_s', rid), ch: att.ch, src: att.src });
-    try { if (!(navigator.sendBeacon && navigator.sendBeacon('/care/hit', body))) { fetch('/care/hit', { method: 'POST', body: body, keepalive: true, credentials: 'same-origin' }).catch(function () {}); } } catch (err) {}
+    try { if (!(navigator.sendBeacon && navigator.sendBeacon(hitUrl, body))) { fetch(hitUrl, { method: 'POST', body: body, keepalive: true, credentials: 'same-origin' }).catch(function () {}); } } catch (err) {}
   }
 
   hit('view');

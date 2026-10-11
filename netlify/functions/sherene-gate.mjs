@@ -9,80 +9,25 @@
 // Reset emails go through GoHighLevel when GHL_API_KEY, GHL_LOCATION_ID and
 // (optionally) GHL_EMAIL_FROM are set; otherwise the admin page makes a link to send by hand.
 import { getStore } from '@netlify/blobs';
-import { createHash, createHmac, randomBytes, scryptSync, timingSafeEqual } from 'node:crypto';
+import { createHash, randomBytes } from 'node:crypto';
+import { SEED, USER_RE, store, hashPassword, checkPassword, getUser, saveUser, issue, session, setCookie, clearCookie } from '../lib/deck-auth.mjs';
 
 const DECK = 'sherene';
 const BASE = `/${DECK}`;
 const HOME = `${BASE}/`;
 const STATS = `${BASE}/stats.html`;
-const COOKIE = `${DECK}_session`;
-const SESSION_DAYS = 30;
-const SEED = { sherene: { password: 'password123', admin: false }, richard: { password: 'password123', admin: true } };
 const MIN_PASSWORD = 10;
 const MAX_FAILURES = 8;
 const LOCK_MINUTES = 15;
 const RESET_MINUTES = 60;
 const CSP = "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; font-src 'self'; connect-src 'self'; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; upgrade-insecure-requests";
-const USER_RE = /^[a-z0-9._-]{1,40}$/;
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const ID_RE = /^[a-z0-9]{4,16}$/;
 
-const store = () => getStore({ name: 'deck-auth', consistency: 'strong' });
 const DECKS = ['sherene', 'richard', 'bni'];
 const views = (deck) => getStore({ name: `${deck}-views`, consistency: 'strong' });
 const env = (k) => (globalThis.Netlify?.env?.get(k)) || process.env[k] || '';
 
-// --- credentials -----------------------------------------------------------
-function hashPassword(password, salt = randomBytes(16).toString('hex')) {
-  return { salt, hash: scryptSync(password, salt, 64).toString('hex') };
-}
-function checkPassword(password, rec) {
-  const { hash } = hashPassword(password, rec.salt);
-  return hash.length === rec.hash.length && timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(rec.hash, 'hex'));
-}
-async function getUser(name) {
-  if (!USER_RE.test(name)) return null;
-  const s = store();
-  let rec = await s.get(`user/${name}`, { type: 'json' });
-  if (!rec && SEED[name]) {
-    rec = { ...hashPassword(SEED[name].password), admin: SEED[name].admin, email: '', mustChange: true, updatedAt: new Date().toISOString() };
-    await s.setJSON(`user/${name}`, rec);
-  }
-  return rec;
-}
-async function saveUser(name, rec) { await store().setJSON(`user/${name}`, rec); }
-async function secret() {
-  const s = store();
-  let v = await s.get('secret');
-  if (!v) { v = randomBytes(32).toString('hex'); await s.set('secret', v); }
-  return v;
-}
-
-// --- sessions ---------------------------------------------------------------
-const b64 = (s) => Buffer.from(s).toString('base64url');
-const unb64 = (s) => Buffer.from(s, 'base64url').toString();
-async function sign(parts) { return createHmac('sha256', await secret()).update(parts.join('|')).digest('base64url'); }
-async function issue(user, rec) {
-  const exp = Date.now() + SESSION_DAYS * 86400000;
-  const parts = [user, String(exp), rec.updatedAt];
-  return `${b64(parts.join('|'))}.${await sign(parts)}`;
-}
-async function session(req) {
-  const m = (req.headers.get('cookie') || '').match(new RegExp(`(?:^|;\\s*)${COOKIE}=([^;]+)`));
-  if (!m) return null;
-  const [body, sig] = m[1].split('.');
-  if (!body || !sig) return null;
-  const parts = unb64(body).split('|');
-  const [user, exp] = parts;
-  const expected = await sign(parts);
-  if (expected.length !== sig.length || !timingSafeEqual(Buffer.from(expected), Buffer.from(sig))) return null;
-  if (Number(exp) < Date.now()) return null;
-  const rec = await getUser(user);
-  if (!rec || rec.updatedAt !== parts[2]) return null;
-  return { user, rec };
-}
-const setCookie = (token) => `${COOKIE}=${token}; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=${SESSION_DAYS * 86400}`;
-const clearCookie = () => `${COOKIE}=; Path=/; HttpOnly; Secure; SameSite=Lax; Max-Age=0`;
 const landing = (rec) => (rec.admin ? STATS : HOME);
 
 // --- rate limiting ------------------------------------------------------------
@@ -147,12 +92,12 @@ function page(title, body) {
 <body class="auth"><main class="auth-card">${body}</main></body></html>`;
 }
 const notice = (msg) => (msg ? `<p class="notice">${esc(msg)}</p>` : '');
-const loginPage = (msg = '', user = '') => page('Sign in', `
+const loginPage = (msg = '', user = '', next = '') => page('Sign in', `
 <p class="eyebrow">Family Care Roadmap</p>
 <h1>Sign in</h1>
 <p class="lede">The page itself is open to everyone at <a href="${HOME}">nationalmedicaidplanning.com/sherene</a>. This sign-in is for the views dashboard.</p>
 ${notice(msg)}
-<form method="post" action="${BASE}/login">
+<form method="post" action="${BASE}/login">${next ? `<input type="hidden" name="next" value="${esc(next)}">` : ''}
   <label>Login<input name="user" value="${esc(user)}" autocomplete="username" required autofocus></label>
   <label>Password<input name="password" type="password" autocomplete="current-password" required></label>
   <button type="submit">Sign in</button>
@@ -284,16 +229,19 @@ export default async (req) => {
   }
 
   if (p === `${BASE}/login`) {
-    if (req.method !== 'POST') return html(loginPage());
+    // Only a page inside the private library may be returned to after signing in.
+    const safeNext = (v) => (/^\/(content-library|care\/guides|medicaid\/guides)(\/[A-Za-z0-9._\/-]*)?$/.test(v || '') ? v : '');
+    if (req.method !== 'POST') return html(loginPage('', '', safeNext(url.searchParams.get('next'))));
     const f = await form();
     const user = String(f.get('user') || '').trim().toLowerCase();
     const password = String(f.get('password') || '');
-    if (!USER_RE.test(user)) return html(loginPage('That login was not recognized.', user), 401);
-    if (await locked(user)) return html(loginPage(`Too many attempts. Please wait ${LOCK_MINUTES} minutes and try again.`, user), 429);
+    const next = safeNext(String(f.get('next') || ''));
+    if (!USER_RE.test(user)) return html(loginPage('That login was not recognized.', user, next), 401);
+    if (await locked(user)) return html(loginPage(`Too many attempts. Please wait ${LOCK_MINUTES} minutes and try again.`, user, next), 429);
     const rec = await getUser(user);
-    if (!rec || !checkPassword(password, rec)) { await noteFailure(user); return html(loginPage('That login and password did not match.', user), 401); }
+    if (!rec || !checkPassword(password, rec)) { await noteFailure(user); return html(loginPage('That login and password did not match.', user, next), 401); }
     await clearFailures(user);
-    return redirect(rec.mustChange ? `${BASE}/password` : landing(rec), { 'set-cookie': setCookie(await issue(user, rec)) });
+    return redirect(rec.mustChange ? `${BASE}/password` : (next && rec.admin ? next : landing(rec)), { 'set-cookie': setCookie(await issue(user, rec)) });
   }
 
   if (p === `${BASE}/logout`) return redirect(HOME, { 'set-cookie': clearCookie() });
