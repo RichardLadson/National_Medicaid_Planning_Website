@@ -83,9 +83,9 @@
     $('status').textContent = 'Loading…';
     return fetch('titles.json', { cache: 'no-store' }).then(function (r) { return r.ok ? r.json() : {}; })
       .then(function (t) { titles = t.titles || {}; order = t.order || []; })
-      .then(function () { return fetch('/andrea/stats-data', { headers: { 'x-stats-key': key }, cache: 'no-store' }); })
+      .then(function () { return fetch('/andrea/stats-data', { headers: key ? { 'x-stats-key': key } : {}, credentials: 'same-origin', cache: 'no-store' }); })
       .then(function (r) {
-        if (r.status === 401) { $('keybox').hidden = false; $('status').textContent = 'That key was not accepted.'; return null; }
+        if (r.status === 401) { $('keybox').hidden = false; $('status').textContent = key ? 'That key was not accepted.' : 'Locked.'; return null; }
         if (!r.ok) throw new Error('HTTP ' + r.status);
         return r.json();
       })
@@ -113,12 +113,12 @@
   $('reset').addEventListener('click', function () {
     if (!armed) { armed = true; $('reset').textContent = 'Click again to delete every recorded view'; return; }
     var k = getKey();
-    fetch('/andrea/stats-data', { method: 'DELETE', headers: { 'x-stats-key': k } })
+    fetch('/andrea/stats-data', { method: 'DELETE', headers: k ? { 'x-stats-key': k } : {}, credentials: 'same-origin' })
       .then(function () { armed = false; $('reset').textContent = 'Reset all counts'; return load(k); });
   });
 
   $('forget').addEventListener('click', function () { forget(); location.reload(); });
   notrackState();
-  var key = getKey();
-  if (key) load(key); else { $('keybox').hidden = false; $('status').textContent = 'Locked.'; }
+  // A signed-in admin (the deck login) needs no key; without either, the server answers 401.
+  load(getKey());
 })();

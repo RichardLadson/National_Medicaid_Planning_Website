@@ -230,7 +230,7 @@ export default async (req) => {
 
   if (p === `${BASE}/login`) {
     // Only a page inside the private library may be returned to after signing in.
-    const safeNext = (v) => (/^\/(content-library|care\/guides|medicaid\/guides)(\/[A-Za-z0-9._\/-]*)?$/.test(v || '') ? v : '');
+    const safeNext = (v) => (/^\/(content-library|care\/guides|medicaid\/guides)(\/[A-Za-z0-9._\/-]*)?$/.test(v || '') || v === '/andrea/stats.html' ? v : '');
     if (req.method !== 'POST') return html(loginPage('', '', safeNext(url.searchParams.get('next'))));
     const f = await form();
     const user = String(f.get('user') || '').trim().toLowerCase();
